@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چت بات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8ab4f8;
+            --secondary-color: #c58af9;
+            --bg-color: #202124;
+            --text-color: #e8eaed;
+            --input-bg: #2F2F2F;
+            --input-text: #e8eaed;
+            --button-bg: #8ab4f8;
+            --button-text: #202124;
+            --option-bg: #303134;
+            --option-hover: #3c4043;
+            --message-user: #8ab4f8;
+            --message-bot: #3c4043;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .chatbot-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(91, 194, 255, 0.05) 0%, rgba(91, 194, 255, 0) 90.1%),
+                radial-gradient(circle at 90% 80%, rgba(197, 138, 249, 0.05) 0%, rgba(197, 138, 249, 0) 90.1%);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+        }
+
+        .chatbot-header {
+            background-color: rgba(48, 49, 52, 0.9);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .chatbot-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 5s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .star-icon {
+            font-size: 24px;
+            color: #fdd663;
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            gap: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--bg-color);
+        }
+
+        .options-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .options-container::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        .options-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .option {
+            background-color: var(--option-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .option:hover {
+            background-color: var(--option-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--bg-color);
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+            animation: fadeInUp 0.5s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: var(--message-user);
+            color: var(--bg-color);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: var(--message-bot);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 20px;
+            background-color: rgba(48, 49, 52, 0.9);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 15px 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #user-input:focus {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        #send-btn {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(138, 180, 248, 0.3);
+        }
+
+        #send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mode-selector {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .mode-selector:focus {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .tooltip-inner {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .bs-tooltip-auto[x-placement^=top] .arrow::before, 
+        .bs-tooltip-top .arrow::before {
+            border-top-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .chatbot-title {
+                font-size: 24px;
+            }
+
+            .option {
+                font-size: 12px;
+                padding: 10px 15px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--message-bot);
+            border-radius: 20px;
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            float: right;
+            margin: 0 1px;
+            background-color: #9E9EA1;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+
+        .typing-indicator span:nth-of-type(1) {
+            animation: 1s blink infinite 0.3333s;
+        }
+
+        .typing-indicator span:nth-of-type(2) {
+            animation: 1s blink infinite 0.6666s;
+        }
+
+        .typing-indicator span:nth-of-type(3) {
+            animation: 1s blink infinite 0.9999s;
+        }
+
+        @keyframes blink {
+            50% { opacity: 1; }
+        }
+
+        .quick-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .quick-action-btn {
+            background-color: var(--option-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin: 0 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            background-color: var(--option-hover);
+            transform: translateY(-2px);
+        }
+
+        .emoji-picker {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background-color: var(--bg-color);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+        }
+
+        .emoji-btn {
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+
+        .emoji-btn:hover {
+            transform: scale(1.2);
+        }
+
+        #emoji-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .voice-input-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .voice-input-btn.recording {
+            color: #ff4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #user-input::placeholder {
+            color: #7B7B7B;
+        }
+        
+        #user-input::-webkit-input-placeholder {
+            color: #7B7B7B;
+        }
+        
+        #user-input:-moz-placeholder {
+            color: #7B7B7B;
+            opacity: 1;
+        }
+        
+        #user-input::-moz-placeholder {
+            color: #7B7B7B;
+            opacity: 1;
+        }
+        
+        #user-input:-ms-input-placeholder {
+            color: #7B7B7B;
+        }
+        
+        #user-input::-ms-input-placeholder {
+            color: #7B7B7B;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="chatbot-title">چت بات دستیار پزشکی</h1>
+                </div>
+                <div class="col-md-5">
+                    <select id="mode-selector" class="mode-selector form-select">
+                        <option value="general_medicine">پزشکی عمومی</option>
+                        <option value="psychology">روانشناسی</option>
+                        <option value="herbal_medicine">طب گیاهی</option>
+                        <option value="emergency_medicine">طب اورژانس</option>
+                        <option value="nutrition">تغذیه</option>
+                        <option value="pediatrics">اطفال</option>
+                        <option value="dermatology">پوست و مو</option>
+                        <option value="cardiology">قلب و عروق</option>
+                    </select>
+                </div>
+                <div class="col-md-1 text-end">
+                    <span class="star-icon">✦</span>
+                </div>
+            </div>
+        </div>
+        <div class="options-container">
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="اطلاعات در مورد علائم شایع">🤒 علائم شایع</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="توصیه‌های تغذیه‌ای برای سلامتی">🥗 تغذیه سالم</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="راهنمایی برای ورزش و تناسب اندام">🏋️ ورزش و تناسب اندام</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="اطلاعات در مورد داروهای رایج">💊 اطلاعات دارویی</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="روش‌های مدیریت استرس و اضطراب">🧘 مدیریت استرس</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="توصیه‌هایی برای خواب بهتر">😴 بهبود خواب</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="اطلاعات در مورد واکسیناسیون">💉 واکسیناسیون</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="روش‌های پیشگیری از بیماری‌های شایع">🦠 پیشگیری از بیماری‌ها</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="توصیه‌هایی برای سلامت قلب">❤️ سلامت قلب</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="اطلاعات در مورد آلرژی‌ها و درمان آنها">🤧 آلرژی‌ها</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="راهنمایی برای مراقبت از پوست و مو">💆 مراقبت پوست و مو</div>
+            <div class="option" data-bs-toggle="tooltip" data-bs-placement="top" title="توصیه‌هایی برای سلامت روان">🧠 سلامت روان</div>
+        </div>
+        <div id="chat-area" class="chat-area">
+            <!-- Chat messages will be dynamically added here -->
+        </div>
+        <div class="input-container">
+            <button id="emoji-toggle" class="btn btn-link">😊</button>
+            <button id="voice-input-btn" class="voice-input-btn">🎤</button>
+            <input type="text" id="user-input" class="form-control" placeholder="پیام خود را اینجا بنویسید...">
+            <button id="send-btn" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        <div class="emoji-picker">
+            <button class="emoji-btn">😊</button>
+            <button class="emoji-btn">😂</button>
+            <button class="emoji-btn">🤔</button>
+            <button class="emoji-btn">👍</button>
+            <button class="emoji-btn">❤️</button>
+            <button class="emoji-btn">🎉</button>
+        </div>
+        <div class="quick-actions">
+            <button class="quick-action-btn" data-action="clear">پاک کردن گفتگو</button>
+            <button class="quick-action-btn" data-action="download">دانلود گفتگو</button>
+            <button class="quick-action-btn" data-action="feedback">بازخورد</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+		const chatArea = document.getElementById('chat-area');
+		const userInput = document.getElementById('user-input');
+		const sendBtn = document.getElementById('send-btn');
+		const options = document.querySelectorAll('.option');
+		const emojiToggle = document.querySelector('.emoji-toggle');
+		const emojiPicker = document.querySelector('.emoji-picker');
+		const emojiButtons = document.querySelectorAll('.emoji-picker button');
+		const voiceInputBtn = document.querySelector('.voice-input');
+		const quickActionBtns = document.querySelectorAll('.quick-actions button');
+
+		var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+		var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+			return new bootstrap.Tooltip(tooltipTriggerEl)
+		})
+
+		function addMessage(message, isUser = false) {
+			const messageDiv = document.createElement('div');
+			messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+			messageDiv.textContent = message;
+			chatArea.appendChild(messageDiv);
+			chatArea.scrollTop = chatArea.scrollHeight;
+		}
+
+		function addTypingIndicator() {
+			const typingDiv = document.createElement('div');
+			typingDiv.classList.add('typing-indicator');
+			typingDiv.innerHTML = '<span></span><span></span><span></span>';
+			chatArea.appendChild(typingDiv);
+			chatArea.scrollTop = chatArea.scrollHeight;
+			return typingDiv;
+		}
+
+		async function sendMessage() {
+			const message = userInput.value.trim();
+			if (message) {
+				addMessage(message, true);
+				userInput.value = '';
+
+				const typingIndicator = addTypingIndicator();
+
+				try {
+					const response = await fetch('/chat', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ message }),
+					});
+
+					typingIndicator.remove();
+
+					if (response.ok) {
+						const data = await response.json();
+						addMessage(data.response);
+					} else {
+						addMessage('خطا: دریافت پاسخ از سرور امکان‌پذیر نیست.');
+					}
+				} catch (error) {
+					typingIndicator.remove();
+					console.error('Error:', error);
+					addMessage('خطا: اتصال به سرور امکان‌پذیر نیست.');
+				}
+			}
+		}
+
+		sendBtn.addEventListener('click', sendMessage);
+		userInput.addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') {
+				sendMessage();
+			}
+		});
+
+		options.forEach(option => {
+			option.addEventListener('click', async () => {
+				const category = option.textContent.trim().split(' ').slice(1).join(' ');
+				try {
+					const response = await fetch('/category', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ category }),
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						addMessage(`${category}: ${data.response}`);
+					} else {
+						addMessage('خطا: دریافت پاسخ از سرور امکان‌پذیر نیست.');
+					}
+				} catch (error) {
+					console.error('Error:', error);
+					addMessage('خطا: اتصال به سرور امکان‌پذیر نیست.');
+				}
+			});
+		});
+
+		emojiToggle.addEventListener('click', () => {
+			emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'flex' : 'none';
+		});
+
+		emojiButtons.forEach(btn => {
+			btn.addEventListener('click', () => {
+				userInput.value += btn.textContent;
+				emojiPicker.style.display = 'none';
+			});
+		});
+
+		let isRecording = false;
+		voiceInputBtn.addEventListener('click', () => {
+			if (!isRecording) {
+				voiceInputBtn.classList.add('recording');
+				isRecording = true;
+				console.log('Voice recording started');
+			} else {
+				voiceInputBtn.classList.remove('recording');
+				isRecording = false;
+				console.log('Voice recording stopped');
+			}
+		});
+
+		quickActionBtns.forEach(btn => {
+			btn.addEventListener('click', () => {
+				const action = btn.textContent.trim();
+				switch (action) {
+					case 'پاک کردن گفتگو':
+						chatArea.innerHTML = '';
+						break;
+					case 'دانلود گفتگو':
+						downloadChatHistory();
+						break;
+					case 'بازخورد':
+						console.log('Feedback button clicked');
+						break;
+				}
+			});
+		});
+
+		function downloadChatHistory() {
+			const messages = Array.from(chatArea.children).map(msg => msg.textContent).join('\n');
+			const blob = new Blob([messages], { type: 'text/plain' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'chat_history.txt';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		}
+
+		chatArea.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			chatArea.classList.add('drag-over');
+		});
+
+		chatArea.addEventListener('dragleave', () => {
+			chatArea.classList.remove('drag-over');
+		});
+
+		chatArea.addEventListener('drop', (e) => {
+			e.preventDefault();
+			chatArea.classList.remove('drag-over');
+			const files = e.dataTransfer.files;
+			if (files.length > 0) {
+				handleFileUpload(files[0]);
+			}
+		});
+
+		function handleFileUpload(file) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const content = e.target.result;
+				addMessage(`فایل آپلود شد: ${file.name}`);
+				console.log('File content:', content);
+			};
+			reader.readAsText(file);
+		}
+
+		function adjustChatAreaHeight() {
+			chatArea.style.height = `${window.innerHeight - 200}px`;
+		}
+
+		window.addEventListener('resize', adjustChatAreaHeight);
+
+		adjustChatAreaHeight();
+	});
+    </script>
+</body>
+</html>
